@@ -1,18 +1,44 @@
 const ONE_HOUR = 1 * 60 * 60 * 1000;
 
+const iconURL = chrome.runtime.getURL('images/icon.png');
+const closeURL = chrome.runtime.getURL('images/close.png');
+
 let currentData = [];
 let prevHostname = '';
-let iconURL = `${chrome.runtime.getURL('')}images/icon.png`;
+let timerId = null;
 
 const loadData = () => {
-  fetch('http://www.softomate.net/ext/employees/list.json')
-    .then(response => {
-      return response.json();
-    })
-    .then(data => {
-      currentData = data;
-      chrome.storage.local.set({ data });
-    });
+  chrome.storage.local.get('lastUpdate', res => {
+    let time = res.lastUpdate ? res.lastUpdate : 0;
+    if (res.lastUpdate) {
+    }
+    if (new Date().getTime() - time > ONE_HOUR) {
+      fetch('http://www.softomate.net/ext/employees/list.json')
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          currentData = data.map(el => {
+            el.count = 0;
+            el.closed = false;
+            return el;
+          });
+          chrome.storage.local.set({ data: currentData });
+          chrome.storage.local.set({
+            lastUpdate: new Date().getTime(),
+          });
+          if (timerId) clearTimeout(timerId);
+          timerId = setTimeout(() => {
+            loadData();
+          }, ONE_HOUR);
+        });
+    } else {
+      chrome.storage.local.get(
+        'data',
+        result => (currentData = result.data),
+      );
+    }
+  });
 };
 
 const changeHostname = hostname => {
@@ -22,48 +48,45 @@ const changeHostname = hostname => {
   return hostname;
 };
 
-const findDataByHostname = hostname =>
-  currentData.find(data => {
+const findDataByHostname = hostname => {
+  return currentData.find(data => {
     return changeHostname(hostname) === data.domain;
   });
+};
 
 loadData();
-setInterval(() => {
-  loadData();
-}, ONE_HOUR);
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  if (!currentData) return;
-  let hostname = new URL(tab.url).hostname;
-  const findResult = findDataByHostname(hostname);
-  chrome.tabs.sendMessage(tabId, {
-    iconURL: iconURL,
-    data: currentData,
-  });
-  if (
-    tab.url &&
-    tab.status === 'complete' &&
-    findResult &&
-    !findResult.closed &&
-    (!findResult.count || findResult.count < 3)
-  ) {
+chrome.tabs.onUpdated.addListener(
+  (tabId, changeInfo, { url, status }) => {
+    if (!url || status !== 'complete') return;
+    let hostname = new URL(url).hostname;
+    const findResult = findDataByHostname(hostname);
     chrome.tabs.sendMessage(tabId, {
-      message: findResult.message,
-      hostname: hostname,
+      type: 'data',
+      iconURL: iconURL,
+      closeURL: closeURL,
+      data: currentData,
     });
+    if (findResult) {
+      if (!findResult.closed && findResult.count < 3) {
+        chrome.tabs.sendMessage(tabId, {
+          type: 'message',
+          message: findResult.message,
+          hostname: hostname,
+        });
 
-    let index = currentData.findIndex(
-      el => el.domain === changeHostname(hostname),
-    );
-    if (index > -1) {
-      currentData[index].count = currentData[index].count
-        ? currentData[index].count + 1
-        : 1;
+        let index = currentData.findIndex(
+          el => el.domain === changeHostname(hostname),
+        );
+        if (index > -1) {
+          currentData[index].count = currentData[index].count + 1;
+        }
+      }
     }
-  }
-});
+  },
+);
 
-chrome.extension.onMessage.addListener(function(request) {
+chrome.extension.onMessage.addListener(request => {
   if (request.hostname) {
     let index = currentData.findIndex(
       el => el.domain === changeHostname(request.hostname),

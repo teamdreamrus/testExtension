@@ -1,8 +1,8 @@
 <template>
   <div class="main">
-    <ul v-if="data.length>0">
-      <li v-for="(el,index) in data" :key="index">
-        <a @click="openInNewTab(el.domain)">{{el.name}}</a>
+    <ul v-if="data.length > 0">
+      <li v-for="(el, index) in data" :key="index">
+        <a @click="openInNewTab(el.domain)">{{ el.name }}</a>
       </li>
     </ul>
   </div>
@@ -11,7 +11,6 @@
 export default {
   name: "app",
   data: () => ({
-    hi: "qqqq",
     data: []
   }),
   methods: {
@@ -24,11 +23,8 @@ export default {
       chrome.tabs.create({ active: true, url: `http://${domain}` });
     }
   },
-  mounted: function() {
+  mounted() {
     this.getData();
-  },
-  watch: {
-    data: function() {}
   }
 };
 </script>

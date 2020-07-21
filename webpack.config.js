@@ -69,6 +69,10 @@ module.exports = {
         {
           from: 'static',
         },
+        {
+          from: 'source/content',
+          to: 'content',
+        },
       ],
     }),
     new MiniCssExtractPlugin({
