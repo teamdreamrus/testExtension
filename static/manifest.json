@@ -1,0 +1,28 @@
+{
+  "name": "test ext",
+  "version": "1.0.0.0",
+  "description": "extension for test task",
+  "default_locale": "en",
+  "author": "teamdreamrus",
+  "manifest_version": 2,
+
+  "permissions": ["storage", "tabs", "activeTab"],
+  "background": {
+    "scripts": ["bg/bundle.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_title": "TimeTracker",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "48": "images/icon.png"
+  },
+  "web_accessible_resources": [
+    "popup/*css",
+    "*.css",
+    "images",
+    "*.png"
+  ]
+}
