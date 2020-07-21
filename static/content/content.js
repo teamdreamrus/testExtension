@@ -11,7 +11,10 @@ chrome.runtime.onMessage.addListener(function(
   close.className = 'img-close';
   close.onclick = function() {
     node.style.display = 'none';
-    // save about Close
+    chrome.extension.sendMessage({
+      hostname: request.hostname,
+      event: 'close',
+    });
   };
 
   node.appendChild(close);
