@@ -2,6 +2,7 @@ const ONE_HOUR = 1 * 60 * 60 * 1000;
 
 let currentData = [];
 let prevHostname = '';
+let iconURL = `${chrome.runtime.getURL('')}images/icon.png`;
 
 const loadData = () => {
   fetch('http://www.softomate.net/ext/employees/list.json')
@@ -35,6 +36,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (!currentData) return;
   let hostname = new URL(tab.url).hostname;
   const findResult = findDataByHostname(hostname);
+  chrome.tabs.sendMessage(tabId, {
+    iconURL: iconURL,
+    data: currentData,
+  });
   if (
     tab.url &&
     tab.status === 'complete' &&
@@ -60,7 +65,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 chrome.extension.onMessage.addListener(function(request) {
   if (request.hostname) {
-    console.log('1. Принято: ', request);
     let index = currentData.findIndex(
       el => el.domain === changeHostname(request.hostname),
     );

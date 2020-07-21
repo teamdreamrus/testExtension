@@ -18,11 +18,9 @@ export default {
     getData() {
       chrome.storage.local.get(["data"], result => {
         this.data = result.data;
-        console.log(result.data);
       });
     },
     openInNewTab(domain) {
-      console.log(new URL(`http://${domain}`));
       chrome.tabs.create({ active: true, url: `http://${domain}` });
     }
   },
