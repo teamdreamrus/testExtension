@@ -10,21 +10,11 @@
 <script>
 export default {
   name: "app",
-  data: () => ({
-    data: []
-  }),
+  props: ["data"],
   methods: {
-    getData() {
-      chrome.storage.local.get(["data"], result => {
-        this.data = result.data;
-      });
-    },
     openInNewTab(domain) {
       chrome.tabs.create({ active: true, url: `http://${domain}` });
     }
-  },
-  mounted() {
-    this.getData();
   }
 };
 </script>

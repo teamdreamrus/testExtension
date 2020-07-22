@@ -15,7 +15,7 @@ const drowIcon = (top, left) => {
 };
 
 const ready = mainBlockClass => {
-  let arrQueries = document.getElementsByClassName(mainBlockClass);
+  const arrQueries = document.getElementsByClassName(mainBlockClass);
   for (let i = 0; i < arrQueries.length; i++) {
     let itHas = false;
     data.forEach(el => {

@@ -1,29 +1,17 @@
-import { ONE_HOUR, DATA_URL } from './constans';
-const iconURL = chrome.runtime.getURL('images/icon.png');
-const closeURL = chrome.runtime.getURL('images/close.png');
+import { ONE_HOUR, DATA_URL, ICON_URL, CLOSE_URL, DEFAULT_PROPS } from './constans';
 
 let currentData = [];
 
 const loadData = () => {
-  chrome.storage.local.get('lastUpdate', res => {
-    const time = res.lastUpdate ? res.lastUpdate : 0;
+  chrome.storage.local.get({ lastUpdate: 0 }, ({ lastUpdate }) => {
+    const time = lastUpdate;
     if (Date.now() - time > ONE_HOUR) {
       fetch(DATA_URL)
         .then(response => {
           return response.json();
         })
         .then(data => {
-          data.forEach(el => {
-            if (
-              currentData.findIndex(currentElement => {
-                return el.domain === currentElement.domain;
-              }) < 0
-            ) {
-              el.count = 0;
-              el.closed = false;
-              currentData.push(el);
-            }
-          });
+          currentData = data.map(el => Object.assign({}, DEFAULT_PROPS, el));
           chrome.storage.local.set({
             lastUpdate: Date.now(),
             data: currentData,
@@ -33,7 +21,7 @@ const loadData = () => {
           }, ONE_HOUR);
         });
     } else {
-      chrome.storage.local.get('data', result => (currentData = result.data));
+      chrome.storage.local.get({ data: [] }, ({ data }) => (currentData = data));
     }
   });
 };
@@ -59,8 +47,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url, status }) => {
   const foundSite = findDataByHostname(hostname);
   chrome.tabs.sendMessage(tabId, {
     type: 'data',
-    iconURL: iconURL,
-    closeURL: closeURL,
+    iconURL: ICON_URL,
+    closeURL: CLOSE_URL,
     data: currentData,
   });
   if (foundSite) {
@@ -71,9 +59,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url, status }) => {
         hostname: hostname,
       });
 
-      let index = currentData.findIndex(el => el.domain === changeHostname(hostname));
+      const index = currentData.findIndex(el => el.domain === changeHostname(hostname));
       if (index > -1) {
-        console.log(currentData[index]);
         currentData[index].count++;
       }
     }
@@ -82,7 +69,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url, status }) => {
 
 chrome.extension.onMessage.addListener(request => {
   if (request.hostname) {
-    let index = currentData.findIndex(el => el.domain === changeHostname(request.hostname));
+    const index = currentData.findIndex(el => el.domain === changeHostname(request.hostname));
     if (index > -1) {
       currentData[index].closed = true;
     }

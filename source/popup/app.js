@@ -2,12 +2,13 @@ import Vue from 'vue';
 import App from './components/app.vue';
 
 class Popup {
-  constructor() {
+  constructor(data) {
     this.popup = new Vue({
       el: '#popup',
-      render: h => h(App),
+      render: h => h(App, { props: { data: data } }),
     });
   }
 }
-
-window.popup = new Popup();
+chrome.storage.local.get({ data: [] }, ({ data }) => {
+  window.popup = new Popup(data);
+});
