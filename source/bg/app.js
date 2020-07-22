@@ -5,13 +5,10 @@ const closeURL = chrome.runtime.getURL('images/close.png');
 
 let currentData = [];
 let prevHostname = '';
-let timerId = null;
 
 const loadData = () => {
   chrome.storage.local.get('lastUpdate', res => {
     let time = res.lastUpdate ? res.lastUpdate : 0;
-    if (res.lastUpdate) {
-    }
     if (new Date().getTime() - time > ONE_HOUR) {
       fetch('http://www.softomate.net/ext/employees/list.json')
         .then(response => {
@@ -27,8 +24,7 @@ const loadData = () => {
           chrome.storage.local.set({
             lastUpdate: new Date().getTime(),
           });
-          if (timerId) clearTimeout(timerId);
-          timerId = setTimeout(() => {
+          setTimeout(() => {
             loadData();
           }, ONE_HOUR);
         });
@@ -79,6 +75,7 @@ chrome.tabs.onUpdated.addListener(
           el => el.domain === changeHostname(hostname),
         );
         if (index > -1) {
+          console.log(currentData[index]);
           currentData[index].count = currentData[index].count + 1;
         }
       }
