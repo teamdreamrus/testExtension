@@ -22,14 +22,9 @@
   "content_scripts": [
     {
       "css": ["content/styles.css"],
-      "js": ["content/content.js"],
+      "js": ["content/bundle.js"],
       "matches": ["<all_urls>"]
     }
   ],
-  "web_accessible_resources": [
-    "popup/*css",
-    "*.css",
-    "images",
-    "*.png"
-  ]
+  "web_accessible_resources": ["popup/*css", "*.css", "images", "*.png"]
 }

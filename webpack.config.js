@@ -14,11 +14,11 @@ const PATHS = {
 module.exports = {
   mode: process.env.NODE_ENV,
   watch: process.env.NODE_ENV === 'development',
-  devtool:
-    process.env.NODE_ENV === 'production' ? '' : 'inline-source-map',
+  devtool: process.env.NODE_ENV === 'production' ? '' : 'inline-source-map',
   entry: {
     bg: `${PATHS.source}/bg/app.js`,
     popup: `${PATHS.source}/popup/app.js`,
+    content: `${PATHS.source}/content/content.js`,
   },
   output: {
     path: PATHS.build,
@@ -31,11 +31,7 @@ module.exports = {
         loader: 'vue-loader',
         options: {
           loaders: {
-            scss: [
-              MiniCssExtractPlugin.loader,
-              'css-loader',
-              'node-sass',
-            ],
+            scss: [MiniCssExtractPlugin.loader, 'css-loader', 'node-sass'],
             js: {
               loader: 'babel-loader',
               options: { presets: ['@babel/preset-env'] },
@@ -57,6 +53,13 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.js$/,
+        exclude: /(node_modules)/,
+        use: {
+          loader: 'babel-loader',
+        },
+      },
     ],
   },
   plugins: [
@@ -70,8 +73,8 @@ module.exports = {
           from: 'static',
         },
         {
-          from: 'source/content',
-          to: 'content',
+          from: 'source/content/styles.css',
+          to: 'content/styles.css',
         },
       ],
     }),
