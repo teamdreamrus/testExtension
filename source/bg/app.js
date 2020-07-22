@@ -4,8 +4,7 @@ let currentData = [];
 
 const loadData = () => {
   chrome.storage.local.get({ lastUpdate: 0 }, ({ lastUpdate }) => {
-    const time = lastUpdate;
-    if (Date.now() - time > ONE_HOUR) {
+    if (Date.now() - lastUpdate > ONE_HOUR) {
       fetch(DATA_URL)
         .then(response => {
           return response.json();
